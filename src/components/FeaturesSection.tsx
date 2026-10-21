@@ -1,4 +1,6 @@
-import { Sparkles, Calculator, Users, Database, ArrowRight } from "lucide-react";
+import { Sparkles, Calculator, CalendarClock, Briefcase, CheckCircle2, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export function FeaturesSection() {
   const features = [
@@ -6,81 +8,121 @@ export function FeaturesSection() {
       title: "Gemini AI Event Architect",
       badge: "Prompt Wars Challenge 5",
       description:
-        "Generates tailored multi-phase timelines, bespoke celebration themes, run-of-show agendas, and vendor recommendations validated against strict JSON schemas.",
+        "Synthesizes cohesive celebration themes, multi-phase itineraries, and tailored vendor briefs. Every AI output is strictly validated against TypeScript Zod schemas.",
       icon: Sparkles,
-      color: "from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30",
+      color: "bg-brand-50 text-brand-600 border-brand-200",
+      bullets: [
+        "Dynamic theme & moodboard generation",
+        "Structured JSON run-of-show schemas",
+        "Deterministic post-processing validation",
+      ],
     },
     {
-      title: "Deterministic Budget Optimization",
+      title: "Deterministic Budget Engine",
       badge: "Zero Math Hallucinations",
       description:
-        "Rigorous financial calculations performed deterministically in TypeScript code — categorizing deposits, pending payments, contingency buffers, and actual variance.",
+        "Financial allocation and variance calculations are executed strictly in application TypeScript. Categorize deposits, pending liabilities, and contingency buffers with 100% precision.",
       icon: Calculator,
-      color: "from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30",
+      color: "bg-emerald-50 text-emerald-600 border-emerald-200",
+      bullets: [
+        "Configurable contingency reserves (5–20%)",
+        "Live variance meter against committed contracts",
+        "Per-guest cost breakdown ratios",
+      ],
     },
     {
-      title: "Smart Guest & RSVP Orchestration",
-      badge: "Real-time Tracking",
+      title: "Run-of-Show Timeline Coordinator",
+      badge: "Synchronized Logistics",
       description:
-        "Live RSVP counters, dietary restrictions breakdown, plus-one tracking, and table assignments with dynamic updates.",
-      icon: Users,
-      color: "from-violet-500/20 to-purple-500/20 text-violet-400 border-violet-500/30",
+        "Transform abstract event visions into precise minute-by-minute execution agendas. Assign point persons, link vendor load-in times, and prevent day-of bottlenecks.",
+      icon: CalendarClock,
+      color: "bg-violet-50 text-violet-600 border-violet-200",
+      bullets: [
+        "Vendor load-in & soundcheck tracking",
+        "Ceremony & banquet milestone locks",
+        "Printable and exportable production schedules",
+      ],
     },
     {
-      title: "PostgreSQL Cloud Persistence",
-      badge: "Supabase Relational DB",
+      title: "Vendor Coordination & Contracts",
+      badge: "Structured Matrix",
       description:
-        "No mock data, no volatile local state. Production-grade relational schemas for events, budget line items, vendors, and guests with Row Level Security (RLS).",
-      icon: Database,
-      color: "from-blue-500/20 to-indigo-500/20 text-blue-400 border-blue-500/30",
+        "Organize caterers, floral stylists, sound engineers, and photographers under a unified dashboard. Track payment milestones and dietary constraints cleanly.",
+      icon: Briefcase,
+      color: "bg-amber-50 text-amber-600 border-amber-200",
+      bullets: [
+        "Contract status & payment due dates",
+        "Dietary & allergy aggregated summaries",
+        "Real PostgreSQL relational persistence",
+      ],
     },
   ];
 
   return (
-    <section id="features" className="scroll-mt-24 py-16">
-      <div className="text-center max-w-3xl mx-auto mb-12">
-        <h2 className="text-xs uppercase font-bold tracking-widest text-indigo-400 mb-2">
-          Architecture & Product Blueprint
-        </h2>
-        <h3 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
-          Everything required to plan unforgettable celebrations
-        </h3>
-        <p className="mt-3 text-slate-400 text-base">
-          Built with real engineering principles: structured AI outputs, deterministic arithmetic, and persistent cloud storage.
-        </p>
-      </div>
+    <section id="features" className="scroll-mt-24 py-16 md:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <Badge variant="indigo" size="sm" className="mb-3">
+            Core Capabilities
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-navy-900 tracking-tight">
+            Engineered for unforgettable celebrations
+          </h2>
+          <p className="mt-3 text-base text-slate-600">
+            Combining the creative intelligence of Gemini 2.0 with the deterministic rigor of modern SaaS architecture.
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {features.map((f, i) => {
-          const Icon = f.icon;
-          return (
-            <div
-              key={i}
-              className="group relative rounded-2xl border border-slate-800 bg-slate-900/40 p-6 md:p-8 hover:border-slate-700 hover:bg-slate-900/70 transition-all shadow-lg"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center border bg-gradient-to-br ${f.color}`}
-                >
-                  <Icon className="w-6 h-6" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {features.map((f, i) => {
+            const Icon = f.icon;
+            return (
+              <div
+                key={i}
+                className="group rounded-3xl border border-slate-200/90 bg-white p-7 sm:p-9 shadow-card hover:shadow-card-hover transition-all duration-200 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <div
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${f.color} shadow-subtle`}
+                    >
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-50 text-slate-700 border border-slate-200">
+                      {f.badge}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-navy-900 group-hover:text-brand-600 transition-colors">
+                    {f.title}
+                  </h3>
+                  <p className="mt-2.5 text-sm text-slate-600 leading-relaxed">
+                    {f.description}
+                  </p>
+
+                  <div className="mt-6 pt-5 border-t border-slate-100 space-y-2.5">
+                    {f.bullets.map((b, idx) => (
+                      <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-700 font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        <span>{b}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                  {f.badge}
-                </span>
+
+                <div className="mt-8 pt-4">
+                  <Link
+                    href="/plan"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 group-hover:translate-x-0.5 transition-transform"
+                  >
+                    <span>Launch in Planner</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
-              <h4 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
-                {f.title}
-              </h4>
-              <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-                {f.description}
-              </p>
-              <div className="mt-4 pt-4 border-t border-slate-800/60 flex items-center text-xs text-indigo-400 font-medium group-hover:translate-x-1 transition-transform">
-                <span>Phase Integration Blueprint</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -15,7 +15,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "EventPilot AI — Plan smarter. Celebrate better.",
   description:
-    "AI-powered celebration & event planning application built for Prompt Wars Challenge 5. Plan timelines, optimize budgets, and orchestrate unforgettable celebrations.",
+    "The intelligent celebration & event planning operating system. Architect multi-phase celebrations, enforce deterministic budget math, and coordinate flawless run-of-show agendas.",
+  keywords: [
+    "event planner",
+    "celebration planning",
+    "wedding coordinator",
+    "budget optimizer",
+    "timeline generator",
+    "Prompt Wars",
+  ],
 };
 
 export default function RootLayout({
@@ -26,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100 min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-warmth-50 text-navy-900 font-sans min-h-screen flex flex-col`}
       >
         {children}
       </body>

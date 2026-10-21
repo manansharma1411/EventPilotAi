@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, AlertCircle, RefreshCw, Server, Cpu, Database, Shield } from "lucide-react";
 import type { SystemHealthResponse } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function HealthChecker() {
   const [data, setData] = useState<SystemHealthResponse | null>(null);
@@ -36,52 +38,54 @@ export function HealthChecker() {
   }, []);
 
   return (
-    <div id="health" className="scroll-mt-24 w-full rounded-2xl border border-slate-800 bg-slate-900/60 p-6 md:p-8 backdrop-blur shadow-2xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+    <div id="health" className="scroll-mt-24 w-full rounded-3xl border border-slate-200/90 bg-white p-6 md:p-8 shadow-card">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
         <div>
           <div className="flex items-center gap-2">
             <span className="flex h-3 w-3 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
             </span>
-            <h2 className="text-xl font-bold text-white">Live System Health Verification</h2>
+            <h2 className="text-xl font-bold text-navy-900">Live System Health Verification</h2>
           </div>
-          <p className="text-sm text-slate-400 mt-1">
-            Real-time ping to <code className="text-violet-400 font-mono">GET /api/health</code>. Validates server responsiveness and architecture readiness.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Real-time ping to <code className="text-brand-600 font-mono bg-brand-50 px-1.5 py-0.5 rounded border border-brand-200/60">GET /api/health</code>. Validates server responsiveness and runtime metrics.
           </p>
         </div>
 
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={checkHealth}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors disabled:opacity-50 self-start sm:self-auto"
+          className="self-start sm:self-auto gap-1.5"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-indigo-400" : ""}`} />
-          {isLoading ? "Checking..." : "Re-test Endpoint"}
-        </button>
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-brand-600" : ""}`} />
+          <span>{isLoading ? "Pinging..." : "Re-test Endpoint"}</span>
+        </Button>
       </div>
 
       {/* Health status summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {/* Core API Status */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+          <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span>Next.js Server</span>
-            <Server className="w-4 h-4 text-indigo-400" />
+            <Server className="w-4 h-4 text-brand-600" />
           </div>
           <div className="flex items-center gap-2">
             {data?.status === "ok" ? (
               <>
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                <span className="text-base font-semibold text-emerald-300">Healthy (200 OK)</span>
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <span className="text-sm font-bold text-emerald-800">Healthy (200 OK)</span>
               </>
             ) : error ? (
               <>
-                <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
-                <span className="text-base font-semibold text-rose-300">Unreachable</span>
+                <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                <span className="text-sm font-bold text-rose-800">Unreachable</span>
               </>
             ) : (
-              <span className="text-sm text-slate-400">Verifying...</span>
+              <span className="text-xs text-slate-400">Verifying...</span>
             )}
           </div>
           <div className="text-[11px] text-slate-500 mt-2 font-mono">
@@ -90,12 +94,12 @@ export function HealthChecker() {
         </div>
 
         {/* Environment */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+          <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span>Runtime Environment</span>
-            <Cpu className="w-4 h-4 text-violet-400" />
+            <Cpu className="w-4 h-4 text-indigo-600" />
           </div>
-          <div className="text-base font-semibold text-white capitalize">
+          <div className="text-sm font-bold text-navy-900 capitalize">
             {data?.environment ?? "Detecting..."}
           </div>
           <div className="text-[11px] text-slate-500 mt-2 font-mono">
@@ -104,47 +108,37 @@ export function HealthChecker() {
         </div>
 
         {/* Supabase PostgreSQL Readiness */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+          <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span>Supabase PostgreSQL</span>
-            <Database className="w-4 h-4 text-emerald-400" />
+            <Database className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-center gap-2">
-            <span
-              className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                data?.services.supabase === "configured"
-                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
-                  : "bg-amber-500/10 text-amber-300 border-amber-500/30"
-              }`}
+            <Badge
+              variant={data?.services.supabase === "configured" ? "success" : "warning"}
+              size="sm"
             >
-              {data?.services.supabase === "configured"
-                ? "Connected & Live"
-                : "Phase 2 Setup Ready"}
-            </span>
+              {data?.services.supabase === "configured" ? "Connected & Live" : "Phase 3 Ready"}
+            </Badge>
           </div>
           <div className="text-[11px] text-slate-500 mt-2">
-            PostgreSQL client architecture ready
+            PostgreSQL relational client stub ready
           </div>
         </div>
 
         {/* Gemini AI Readiness */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
-          <div className="flex items-center justify-between text-slate-400 text-xs mb-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+          <div className="flex items-center justify-between text-slate-500 text-xs mb-2">
             <span>Gemini AI Engine</span>
-            <Shield className="w-4 h-4 text-amber-400" />
+            <Shield className="w-4 h-4 text-amber-600" />
           </div>
           <div className="flex items-center gap-2">
-            <span
-              className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                data?.services.gemini === "configured"
-                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
-                  : "bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
-              }`}
+            <Badge
+              variant={data?.services.gemini === "configured" ? "success" : "indigo"}
+              size="sm"
             >
-              {data?.services.gemini === "configured"
-                ? "Active"
-                : "Phase 3 Ready"}
-            </span>
+              {data?.services.gemini === "configured" ? "Active" : "Phase 3 Ready"}
+            </Badge>
           </div>
           <div className="text-[11px] text-slate-500 mt-2">
             Structured prompt schemas prepared
@@ -154,19 +148,19 @@ export function HealthChecker() {
 
       {/* Raw Payload Inspector */}
       {data && (
-        <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950 p-4">
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-900 p-4 text-white">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-2 font-mono">
-            <span>Actual Server Response (Verified):</span>
-            <span className="text-slate-500">{data.timestamp}</span>
+            <span>Live Response (GET /api/health):</span>
+            <span>{data.timestamp}</span>
           </div>
-          <pre className="text-xs font-mono text-emerald-400 overflow-x-auto p-2 bg-slate-900/80 rounded border border-slate-800/60">
+          <pre className="text-xs font-mono text-emerald-400 overflow-x-auto p-2 bg-slate-950/70 rounded-xl border border-slate-800">
             {JSON.stringify(data, null, 2)}
           </pre>
         </div>
       )}
 
       {error && (
-        <div className="mt-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">
+        <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
           <strong>Health verification error:</strong> {error}
         </div>
       )}
