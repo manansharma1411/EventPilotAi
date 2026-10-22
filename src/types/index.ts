@@ -1,4 +1,6 @@
-// EventPilot AI - Core Domain Types
+// ==============================================================================
+// EventPilot AI - Core TypeScript Types & Database Contracts
+// ==============================================================================
 
 export type EventCategory =
   | "wedding"
@@ -7,57 +9,121 @@ export type EventCategory =
   | "conference"
   | "anniversary"
   | "gala"
+  | "community"
+  | "other"
   | "social";
 
-export type EventStatus = "planning" | "confirmed" | "completed" | "archived";
+export type EventType = EventCategory;
 
-export interface EventItem {
+export type EventStatus = "planning" | "confirmed" | "in_progress" | "completed" | "archived" | "draft";
+
+// 1. Profile Entity (1-to-1 with auth.users)
+export interface ProfileRecord {
   id: string;
-  userId?: string;
+  display_name: string | null;
+  email?: string | null;
+  avatar_url?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// 2. Event Entity
+export interface EventRecord {
+  id: string;
+  user_id: string;
   title: string;
-  description: string;
-  category: EventCategory;
-  date: string;
+  event_type: string;
+  event_date: string;
+  timezone: string;
   location: string;
-  estimatedBudget: number;
-  actualSpend: number;
-  guestCount: number;
+  guest_count: number;
+  total_budget: number;
+  currency: string;
+  theme: string | null;
+  preferences: Record<string, unknown>;
   status: EventStatus;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface BudgetItem {
+// 3. Budget Item Entity (Exact numeric amounts)
+export interface BudgetItemRecord {
   id: string;
-  eventId: string;
+  event_id: string;
   category: string;
-  name: string;
-  allocatedAmount: number;
-  actualAmount: number;
-  isPaid: boolean;
-  notes?: string;
-}
-
-export interface GuestItem {
-  id: string;
-  eventId: string;
-  fullName: string;
-  email?: string;
-  rsvpStatus: "attending" | "declined" | "pending";
-  dietaryRestrictions?: string;
-  plusOnes: number;
-  tableAssignment?: string;
-}
-
-export interface TimelineScheduleItem {
-  id: string;
-  eventId: string;
-  time: string;
-  title: string;
   description: string;
-  responsiblePerson?: string;
+  estimated_cost: number;
+  actual_cost: number;
+  currency: string;
+  created_at: string;
+  updated_at: string;
 }
 
+// 4. Task Entity (Run-of-show & logistics)
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
+export type TaskStatus = "pending" | "in_progress" | "completed" | "blocked" | "todo";
+
+export interface TaskRecord {
+  id: string;
+  event_id: string;
+  title: string;
+  description: string | null;
+  due_at: string | null;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dependencies: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+// 5. Vendor Entity
+export type VendorVerificationStatus = "unverified" | "verified" | "featured";
+
+export interface VendorRecord {
+  id: string;
+  name: string;
+  category: string;
+  location: string;
+  contact_info: Record<string, unknown>;
+  source: string;
+  verification_status: VendorVerificationStatus;
+  is_public: boolean;
+  created_by?: string | null;
+  created_at: string;
+}
+
+// 6. Event Vendor Junction
+export type EventVendorSelectionStatus =
+  | "inquired"
+  | "shortlisted"
+  | "quoted"
+  | "contract_signed"
+  | "declined";
+
+export interface EventVendorRecord {
+  id: string;
+  event_id: string;
+  vendor_id: string;
+  quoted_price: number;
+  currency: string;
+  selection_status: EventVendorSelectionStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  vendor?: VendorRecord;
+}
+
+// 7. Event Plan Version Entity
+export interface EventPlanVersionRecord {
+  id: string;
+  event_id: string;
+  version_number: number;
+  plan_snapshot: Record<string, unknown>;
+  change_summary: string;
+  created_at: string;
+}
+
+// System Health API Response
 export interface SystemHealthResponse {
   status: "ok" | "error";
   app: string;

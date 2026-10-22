@@ -68,8 +68,20 @@ export function Navbar() {
           </Link>
         </nav>
 
-        {/* Primary CTA */}
+        {/* Primary CTA & Auth */}
         <div className="hidden md:flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="text-xs font-semibold text-slate-600 hover:text-navy-900 transition-colors"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/login"
+            className="text-xs font-semibold text-slate-600 hover:text-navy-900 transition-colors"
+          >
+            Sign In
+          </Link>
           <Link href="/plan">
             <Button size="md" className="gap-2">
               <span>Plan My Event</span>
@@ -120,6 +132,20 @@ export function Navbar() {
             Sample Plan
           </a>
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <Link
+              href="/dashboard"
+              onClick={() => setIsOpen(false)}
+              className="text-xs font-semibold text-center py-2 rounded-lg bg-slate-50 text-slate-700 border border-slate-200"
+            >
+              Go to Dashboard
+            </Link>
+            <Link
+              href="/login"
+              onClick={() => setIsOpen(false)}
+              className="text-xs font-semibold text-center py-2 rounded-lg bg-slate-50 text-slate-700 border border-slate-200"
+            >
+              Sign In / Account
+            </Link>
             <Link href="/plan" onClick={() => setIsOpen(false)}>
               <Button className="w-full">Plan My Event</Button>
             </Link>

@@ -1,20 +1,27 @@
-/**
- * EventPilot AI - Supabase Client Architecture Stub
- * Complete database models & queries will be activated in Phase 2.
- */
+import { createBrowserClient } from "@supabase/ssr";
 
-export interface SupabaseConfig {
-  url: string | undefined;
-  anonKey: string | undefined;
-  isConfigured: boolean;
+export function createClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+
+  return createBrowserClient(supabaseUrl, supabaseKey);
 }
 
-export function getSupabaseConfig(): SupabaseConfig {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return {
-    url,
-    anonKey,
-    isConfigured: Boolean(url && anonKey && url.startsWith("https://")),
-  };
+export function isSupabaseConfigured(): boolean {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  return Boolean(
+    supabaseUrl &&
+    supabaseKey &&
+    supabaseUrl.startsWith("https://")
+  );
 }

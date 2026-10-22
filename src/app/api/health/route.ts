@@ -3,12 +3,20 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
   const isSupabaseConfigured = Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    supabaseUrl &&
+    supabaseKey &&
+    supabaseUrl.startsWith("https://")
   );
 
-  const isGeminiConfigured = Boolean(process.env.GEMINI_API_KEY);
+  const isGeminiConfigured = Boolean(
+    process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 5
+  );
 
   const payload = {
     status: "ok",
