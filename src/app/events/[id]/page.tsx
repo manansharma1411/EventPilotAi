@@ -20,13 +20,20 @@ import {
   PieChart,
   ShieldAlert,
   Save,
-  X
+  X,
+  AlertCircle,
+  RefreshCw,
+  Send,
+  Lightbulb,
+  AlertTriangle,
+  HelpCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { EventRecord, TaskRecord, BudgetItemRecord, EventVendorRecord } from "@/types";
+import type { GeneratedEventPlan } from "@/lib/ai/schemas";
 
 interface WorkspaceProps {
   params: Promise<{ id: string }>;
@@ -39,12 +46,20 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
 
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  
+
   // Data state
   const [event, setEvent] = useState<EventRecord | null>(null);
   const [tasks, setTasks] = useState<TaskRecord[]>([]);
-  const [, setBudgetItems] = useState<BudgetItemRecord[]>([]);
+  const [budgetItems, setBudgetItems] = useState<BudgetItemRecord[]>([]);
   const [eventVendors, setEventVendors] = useState<EventVendorRecord[]>([]);
+
+  // AI Plan State
+  const [aiPlan, setAiPlan] = useState<GeneratedEventPlan | null>(null);
+  const [planVersion, setPlanVersion] = useState<number>(0);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [planGenError, setPlanGenError] = useState<string | null>(null);
+  const [revisionInstruction, setRevisionInstruction] = useState("");
+  const [isRevising, setIsRevising] = useState(false);
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<"overview" | "budget" | "timeline" | "tasks" | "vendors" | "ai_planner">("overview");
@@ -67,30 +82,39 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch event data
+  // Fetch event data and latest plan
   const fetchEvent = async () => {
     try {
       setIsLoading(true);
       setErrorMessage(null);
 
-      const res = await fetch(`/api/events/${eventId}`);
-      const data = await res.json();
+      const [eventRes, planRes] = await Promise.all([
+        fetch(`/api/events/${eventId}`),
+        fetch(`/api/events/${eventId}/plan`),
+      ]);
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to load event.");
+      const eventData = await eventRes.json();
+      if (!eventRes.ok) throw new Error(eventData.error || "Failed to load event.");
+
+      setEvent(eventData.event);
+      setTasks(eventData.tasks || []);
+      setBudgetItems(eventData.budget_items || []);
+      setEventVendors(eventData.event_vendors || []);
+
+      if (planRes.ok) {
+        const planData = await planRes.json();
+        if (planData.latestPlan) {
+          setAiPlan(planData.latestPlan);
+          setPlanVersion(planData.versionNumber || 1);
+        }
       }
 
-      setEvent(data.event);
-      setTasks(data.tasks || []);
-      setBudgetItems(data.budget_items || []);
-      setEventVendors(data.event_vendors || []);
-
       // Populate edit states
-      setEditTitle(data.event.title);
-      setEditLocation(data.event.location);
-      setEditDate(data.event.event_date);
-      setEditGuestCount(data.event.guest_count);
-      setEditBudget(Number(data.event.total_budget));
+      setEditTitle(eventData.event.title);
+      setEditLocation(eventData.event.location);
+      setEditDate(eventData.event.event_date);
+      setEditGuestCount(eventData.event.guest_count);
+      setEditBudget(Number(eventData.event.total_budget));
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error loading event workspace";
       setErrorMessage(msg);
@@ -102,6 +126,70 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
   useEffect(() => {
     fetchEvent();
   }, [eventId]);
+
+  // Handle AI Plan Generation
+  const handleGeneratePlan = async () => {
+    try {
+      setIsGeneratingPlan(true);
+      setPlanGenError(null);
+
+      const res = await fetch(`/api/events/${eventId}/plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to synthesize event blueprint");
+      }
+
+      setAiPlan(data.plan);
+      setPlanVersion(data.version);
+      // Refresh event items (tasks and budget were synchronized to the DB)
+      fetchEvent();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error during AI generation";
+      setPlanGenError(msg);
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
+
+  // Handle AI Plan Revision
+  const handleRevisePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!revisionInstruction.trim()) return;
+
+    try {
+      setIsRevising(true);
+      setPlanGenError(null);
+
+      const res = await fetch(`/api/events/${eventId}/plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isRevision: true,
+          userInstruction: revisionInstruction.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to apply plan revision");
+      }
+
+      setAiPlan(data.plan);
+      setPlanVersion(data.version);
+      setRevisionInstruction("");
+      fetchEvent();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error revising plan";
+      setPlanGenError(msg);
+    } finally {
+      setIsRevising(false);
+    }
+  };
 
   // Handle Edit Submit
   const handleUpdateEvent = async (e: React.FormEvent) => {
@@ -190,7 +278,7 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
   // Handle Toggle Task Status
   const handleToggleTask = async (task: TaskRecord) => {
     const nextStatus: TaskRecord["status"] = task.status === "completed" ? "todo" : "completed";
-    
+
     // Optimistic local update
     const previousTasks = [...tasks];
     setTasks(
@@ -208,7 +296,6 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
       });
 
       if (!res.ok) {
-        // Rollback
         setTasks(previousTasks);
         alert("Failed to update task status");
       }
@@ -271,6 +358,11 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
                 <Badge variant="indigo" size="sm" className="capitalize hidden sm:inline-flex">
                   {event.event_type}
                 </Badge>
+                {planVersion > 0 && (
+                  <Badge variant="indigo" size="sm">
+                    AI Blueprint v{planVersion}
+                  </Badge>
+                )}
               </div>
               <p className="text-[11px] text-slate-500 flex items-center gap-2">
                 <span>{event.event_date}</span>
@@ -307,11 +399,11 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
           <nav className="flex space-x-6 overflow-x-auto text-xs font-semibold py-2">
             {[
               { id: "overview", label: "Overview", icon: Layers },
-              { id: "budget", label: "Budget & Ledger", icon: DollarSign },
-              { id: "timeline", label: "Timeline & Run-of-Show", icon: Clock },
+              { id: "ai_planner", label: "AI Blueprint Generator", icon: Bot },
+              { id: "budget", label: `Budget Ledger (${budgetItems.length})`, icon: DollarSign },
+              { id: "timeline", label: "Run-of-Show Itinerary", icon: Clock },
               { id: "tasks", label: `Tasks (${completedTasksCount}/${tasks.length})`, icon: ListTodo },
               { id: "vendors", label: `Vendors (${eventVendors.length})`, icon: ShoppingBag },
-              { id: "ai_planner", label: "AI Blueprint Generator", icon: Bot },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -377,6 +469,30 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
                 <span className="text-[10px] text-slate-400">{event.timezone}</span>
               </Card>
             </div>
+
+            {/* AI Summary Highlight Banner if Generated */}
+            {aiPlan && (
+              <Card className="p-6 bg-gradient-to-r from-brand-50/60 to-indigo-50/60 border-brand-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-brand-600" />
+                    <h3 className="text-sm font-bold text-navy-900">AI Celebration Blueprint Summary</h3>
+                  </div>
+                  <Badge variant="indigo" size="sm">Version {planVersion}</Badge>
+                </div>
+                <p className="text-xs text-navy-800 leading-relaxed font-medium">
+                  {aiPlan.event_summary}
+                </p>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <span className="text-[11px] text-slate-500 font-semibold self-center">Palette:</span>
+                  {aiPlan.theme_and_rationale.color_palette.map((color) => (
+                    <span key={color} className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-mono text-slate-700 shadow-sm">
+                      {color}
+                    </span>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {/* Event Specific Preferences Card */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -472,13 +588,214 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
           </div>
         )}
 
-        {/* TAB 2: BUDGET */}
+        {/* TAB: AI PLANNER ENGINE */}
+        {activeTab === "ai_planner" && (
+          <div className="space-y-8">
+            {/* Header Action Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+              <div>
+                <h2 className="text-lg font-bold text-navy-900 flex items-center gap-2">
+                  <Bot className="w-5 h-5 text-brand-600" />
+                  <span>GenAI Event Planning Engine</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Powered by Google Gemini 2.5 Flash. Formulates bespoke budget allocations, run-of-show itineraries, and risk registers.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleGeneratePlan}
+                  isLoading={isGeneratingPlan}
+                  size="md"
+                  className="gap-2 shadow-sm"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>{aiPlan ? "Re-Generate Full Plan" : "Generate AI Plan"}</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Error Notification */}
+            {planGenError && (
+              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-start gap-3 shadow-subtle">
+                <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-bold">Generation Error</p>
+                  <p>{planGenError}</p>
+                  {planGenError.includes("GEMINI_API_KEY") && (
+                    <p className="text-[11px] text-rose-700 font-mono mt-1">
+                      Tip: Obtain a free key from Google AI Studio and place it in .env.local as GEMINI_API_KEY.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* If No Plan Yet: Empty State */}
+            {!aiPlan && !isGeneratingPlan && (
+              <Card className="p-10 text-center space-y-4 bg-gradient-to-br from-white to-brand-50/40 border-dashed border-2 border-brand-200">
+                <div className="w-14 h-14 rounded-2xl bg-brand-600 text-white flex items-center justify-center mx-auto shadow-md">
+                  <Bot className="w-7 h-7" />
+                </div>
+                <h3 className="text-base font-bold text-navy-900">No AI Blueprint Formulated Yet</h3>
+                <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
+                  Synthesize an intelligent celebration package tailored to <strong>{event.title}</strong> with exact per-guest budget splits, risk assessments, and logistical milestone schedules.
+                </p>
+                <div className="pt-2">
+                  <Button onClick={handleGeneratePlan} size="lg" className="gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Generate Blueprint with Gemini</span>
+                  </Button>
+                </div>
+              </Card>
+            )}
+
+            {/* Loading Skeleton */}
+            {isGeneratingPlan && (
+              <Card className="p-12 text-center space-y-4">
+                <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                <h3 className="text-sm font-bold text-navy-900">Synthesizing Celebration Blueprint...</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Gemini 2.5 Flash is calculating category splits, estimating vendor requirements, and constructing your run-of-show timeline.
+                </p>
+              </Card>
+            )}
+
+            {/* Generated Plan Details */}
+            {aiPlan && !isGeneratingPlan && (
+              <div className="space-y-6">
+                {/* 1. Theme, Rationale & Ideas */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="p-6 space-y-3">
+                    <h3 className="text-sm font-bold text-navy-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-brand-600" />
+                      <span>{aiPlan.theme_and_rationale.theme_name}</span>
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {aiPlan.theme_and_rationale.rationale}
+                    </p>
+                    <div className="pt-2">
+                      <span className="text-[11px] font-bold text-navy-900 block mb-1.5">Color Palette:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {aiPlan.theme_and_rationale.color_palette.map((c) => (
+                          <span key={c} className="px-2.5 py-1 rounded-lg bg-slate-100 text-navy-900 text-xs font-mono font-medium">
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="pt-2">
+                      <span className="text-[11px] font-bold text-navy-900 block mb-1">Decor Concepts:</span>
+                      <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                        {aiPlan.theme_and_rationale.decor_ideas.map((idea, i) => (
+                          <li key={i}>{idea}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 space-y-3">
+                    <h3 className="text-sm font-bold text-navy-900 flex items-center gap-2">
+                      <Lightbulb className="w-4 h-4 text-amber-600" />
+                      <span>Personalized Celebration Touches</span>
+                    </h3>
+                    <ul className="text-xs text-slate-600 space-y-2">
+                      {aiPlan.personalized_ideas.map((idea, idx) => (
+                        <li key={idx} className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100/80 leading-relaxed">
+                          {idea}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                </div>
+
+                {/* 2. Risks, Missing Info & Assumptions */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="p-6 space-y-3">
+                    <h3 className="text-sm font-bold text-navy-900 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-rose-600" />
+                      <span>Identified Risks & Contingencies</span>
+                    </h3>
+                    <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                      {aiPlan.risks_and_missing_info.identified_risks.map((risk, idx) => (
+                        <li key={idx}>{risk}</li>
+                      ))}
+                    </ul>
+                    {aiPlan.risks_and_missing_info.recommendations.length > 0 && (
+                      <div className="pt-2">
+                        <span className="text-[11px] font-bold text-navy-900 block mb-1">AI Recommendations:</span>
+                        <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                          {aiPlan.risks_and_missing_info.recommendations.map((rec, idx) => (
+                            <li key={idx}>{rec}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </Card>
+
+                  <Card className="p-6 space-y-3">
+                    <h3 className="text-sm font-bold text-navy-900 flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-indigo-600" />
+                      <span>Planning Assumptions & Questions</span>
+                    </h3>
+                    <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                      {aiPlan.planning_assumptions.map((assump, idx) => (
+                        <li key={idx}>{assump}</li>
+                      ))}
+                    </ul>
+                    {aiPlan.risks_and_missing_info.missing_information.length > 0 && (
+                      <div className="pt-2">
+                        <span className="text-[11px] font-bold text-navy-900 block mb-1">Information Needed from Venue/Client:</span>
+                        <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                          {aiPlan.risks_and_missing_info.missing_information.map((info, idx) => (
+                            <li key={idx}>{info}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </Card>
+                </div>
+
+                {/* 3. Interactive Plan Revision Form */}
+                <Card className="p-6 space-y-3 bg-white border-brand-200">
+                  <h3 className="text-sm font-bold text-navy-900 flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4 text-brand-600" />
+                    <span>Instruct AI to Revise Blueprint</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Need to change the vibe, decrease the catering budget, or adjust for outdoor rain contingencies? Tell Gemini below:
+                  </p>
+                  <form onSubmit={handleRevisePlan} className="flex gap-2">
+                    <Input
+                      placeholder="e.g. Shift 5% of catering budget into live acoustic music, and add a cocktail hour..."
+                      value={revisionInstruction}
+                      onChange={(e) => setRevisionInstruction(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button type="submit" size="md" isLoading={isRevising} className="gap-1.5 flex-shrink-0">
+                      <Send className="w-4 h-4" />
+                      <span>Revise</span>
+                    </Button>
+                  </form>
+                </Card>
+
+                {/* Disclaimer */}
+                <p className="text-[11px] text-slate-400 text-center italic">
+                  {aiPlan.metadata.unverified_estimates_disclaimer}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: BUDGET (Synced from AI Plan) */}
         {activeTab === "budget" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold text-navy-900">Budget Ledger & Line Items</h2>
-                <p className="text-xs text-slate-500">Track budgeted estimates against actual vendor commitments.</p>
+                <p className="text-xs text-slate-500">Deterministic exact allocation based on total approved cap.</p>
               </div>
               <div className="text-right">
                 <span className="text-xs text-slate-500">Total Cap:</span>
@@ -488,35 +805,77 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
               </div>
             </div>
 
-            <Card className="p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
-                <PieChart className="w-6 h-6" />
+            {budgetItems.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {budgetItems.map((item) => (
+                  <Card key={item.id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-navy-900">{item.category}</span>
+                      <Badge variant="indigo" size="sm">Estimate</Badge>
+                    </div>
+                    <p className="text-lg font-extrabold text-navy-900 font-mono">
+                      {event.currency} {Number(item.estimated_cost).toLocaleString()}
+                    </p>
+                    <p className="text-xs text-slate-500 line-clamp-2">{item.description}</p>
+                  </Card>
+                ))}
               </div>
-              <h3 className="text-sm font-bold text-navy-900">Smart Budget Splits Coming in Phase 5</h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
-                The Gemini AI Engine in Phase 5 will automatically generate category splits (Venue, Catering, Photography, Entertainment) optimized for your total budget of {event.currency} {Number(event.total_budget).toLocaleString()}.
-              </p>
-            </Card>
+            ) : (
+              <Card className="p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
+                  <PieChart className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-bold text-navy-900">No Budget Splits Yet</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Open the <strong>AI Blueprint Generator</strong> tab and click generate to automatically split your {event.currency} {Number(event.total_budget).toLocaleString()} budget across categories.
+                </p>
+                <Button size="sm" onClick={() => setActiveTab("ai_planner")}>
+                  Go to AI Planner
+                </Button>
+              </Card>
+            )}
           </div>
         )}
 
-        {/* TAB 3: TIMELINE */}
+        {/* TAB 3: TIMELINE (Run-of-show from AI plan) */}
         {activeTab === "timeline" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-base font-bold text-navy-900">Minute-by-Minute Run of Show</h2>
-              <p className="text-xs text-slate-500">Schedule vendor arrival, milestone announcements, and event flow.</p>
+              <h2 className="text-base font-bold text-navy-900">Run-of-Show Celebration Itinerary</h2>
+              <p className="text-xs text-slate-500">Minute-by-minute schedule and milestone coordination.</p>
             </div>
 
-            <Card className="p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
-                <Clock className="w-6 h-6" />
+            {aiPlan && aiPlan.suggested_activities && aiPlan.suggested_activities.length > 0 ? (
+              <div className="space-y-3">
+                {aiPlan.suggested_activities.map((act, idx) => (
+                  <Card key={idx} className="p-4 flex items-start gap-4">
+                    <div className="p-2.5 rounded-xl bg-brand-50 text-brand-700 font-mono text-xs font-bold whitespace-nowrap">
+                      {act.time_or_milestone}
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-xs font-bold text-navy-900">{act.activity_name}</h4>
+                        <span className="text-[10px] text-slate-400">({act.duration_minutes} mins)</span>
+                      </div>
+                      <p className="text-xs text-slate-600">{act.description}</p>
+                    </div>
+                  </Card>
+                ))}
               </div>
-              <h3 className="text-sm font-bold text-navy-900">Timeline Generation Ready for Phase 5</h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Dynamic itinerary schedules tailored to your event type ({event.event_type}) will be synthesized with conflict detection in the upcoming AI Generation phase.
-              </p>
-            </Card>
+            ) : (
+              <Card className="p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
+                  <Clock className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-bold text-navy-900">No Timeline Generated Yet</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Generate an AI plan to assemble an itinerary for your {event.event_type} event.
+                </p>
+                <Button size="sm" onClick={() => setActiveTab("ai_planner")}>
+                  Open AI Planner
+                </Button>
+              </Card>
+            )}
           </div>
         )}
 
@@ -580,7 +939,7 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
                   </div>
 
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                    task.priority === "high" ? "bg-rose-50 text-rose-700" : task.priority === "medium" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
+                    task.priority === "high" || task.priority === "urgent" ? "bg-rose-50 text-rose-700" : task.priority === "medium" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
                   }`}>
                     {task.priority}
                   </span>
@@ -600,38 +959,51 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
         {activeTab === "vendors" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-base font-bold text-navy-900">Vendors & Partners</h2>
-              <p className="text-xs text-slate-500">Curate and contact service providers for catering, music, and photography.</p>
+              <h2 className="text-base font-bold text-navy-900">Vendors & Partners Needed</h2>
+              <p className="text-xs text-slate-500">Service categories required for {event.title} in {event.location}.</p>
             </div>
 
-            <Card className="p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
-                <ShoppingBag className="w-6 h-6" />
+            {aiPlan && aiPlan.vendor_categories_needed && aiPlan.vendor_categories_needed.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {aiPlan.vendor_categories_needed.map((v, idx) => (
+                  <Card key={idx} className="p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-navy-900">{v.category}</h4>
+                      <Badge variant={v.necessity === "essential" ? "indigo" : "outline"} size="sm" className="capitalize">
+                        {v.necessity}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      <strong>Budget Range:</strong> {v.estimated_cost_range}
+                    </p>
+                    {v.suggested_questions.length > 0 && (
+                      <div className="pt-1">
+                        <span className="text-[11px] font-bold text-navy-900 block mb-1">Key Questions to Ask:</span>
+                        <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                          {v.suggested_questions.map((q, qIdx) => (
+                            <li key={qIdx}>{q}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </Card>
+                ))}
               </div>
-              <h3 className="text-sm font-bold text-navy-900">Vendor Matching Ready for Phase 6</h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Smart vendor recommendations based on {event.location} and category budget limits will be linked in the Vendor Curation phase.
-              </p>
-            </Card>
+            ) : (
+              <Card className="p-8 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+                  <ShoppingBag className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-bold text-navy-900">No Vendor Requirements Formulated</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Generate an AI blueprint to automatically identify essential vendor categories, price ranges, and interview questions.
+                </p>
+                <Button size="sm" onClick={() => setActiveTab("ai_planner")}>
+                  Open AI Planner
+                </Button>
+              </Card>
+            )}
           </div>
-        )}
-
-        {/* TAB 6: AI PLANNER */}
-        {activeTab === "ai_planner" && (
-          <Card className="p-10 text-center space-y-4 bg-gradient-to-br from-white to-brand-50/50 border-brand-200">
-            <div className="w-14 h-14 rounded-2xl bg-brand-600 text-white flex items-center justify-center mx-auto shadow-md">
-              <Bot className="w-7 h-7" />
-            </div>
-            <h2 className="text-lg font-bold text-navy-900">GenAI Blueprint Generator</h2>
-            <p className="text-xs text-slate-600 max-w-md mx-auto leading-relaxed">
-              Phase 5 will activate Google Gemini 2.5 Flash to automatically assemble a bespoke celebration package: full budget breakdowns, contingency allocations, run-of-show timeline, and vendor checklists.
-            </p>
-            <div className="pt-2">
-              <Badge variant="indigo" size="md">
-                Phase 5: Gemini API Integration Next
-              </Badge>
-            </div>
-          </Card>
         )}
       </main>
 
