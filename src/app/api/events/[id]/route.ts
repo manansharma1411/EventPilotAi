@@ -99,6 +99,14 @@ export async function PUT(req: Request, { params }: RouteParams) {
     const payload = validation.data;
 
     // Enforce ownership: update only where id = id AND user_id = user.id
+    // Fetch current event to detect if event_date changed
+    const { data: currentEvent } = await supabase
+      .from("events")
+      .select("event_date")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
     const { data: updatedEvent, error: updateError } = await supabase
       .from("events")
       .update({
@@ -124,6 +132,33 @@ export async function PUT(req: Request, { params }: RouteParams) {
         { error: "Failed to update event: " + (updateError?.message || "Not found") },
         { status: 400 }
       );
+    }
+
+    // If event_date changed, recalculate relative task deadlines deterministically on the server
+    if (currentEvent && currentEvent.event_date !== payload.event_date) {
+      const { data: currentTasks } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("event_id", id);
+
+      if (currentTasks && currentTasks.length > 0) {
+        const oldDate = new Date(currentEvent.event_date);
+        const newDate = new Date(payload.event_date);
+        const dayShift = Math.round((newDate.getTime() - oldDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        for (const t of currentTasks) {
+          if (t.due_at) {
+            const tDate = new Date(t.due_at);
+            if (!isNaN(tDate.getTime())) {
+              tDate.setDate(tDate.getDate() + dayShift);
+              await supabase
+                .from("tasks")
+                .update({ due_at: tDate.toISOString() })
+                .eq("id", t.id);
+            }
+          }
+        }
+      }
     }
 
     return NextResponse.json({ event: updatedEvent });

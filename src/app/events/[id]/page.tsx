@@ -34,6 +34,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { EventRecord, TaskRecord, BudgetItemRecord, EventVendorRecord } from "@/types";
 import type { GeneratedEventPlan } from "@/lib/ai/schemas";
+import { SmartBudgetWorkspace } from "@/components/SmartBudgetWorkspace";
+import { InteractiveTaskWorkspace } from "@/components/InteractiveTaskWorkspace";
+import { InteractiveTimelineWorkspace } from "@/components/InteractiveTimelineWorkspace";
 
 interface WorkspaceProps {
   params: Promise<{ id: string }>;
@@ -789,170 +792,35 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
           </div>
         )}
 
-        {/* TAB 2: BUDGET (Synced from AI Plan) */}
+        {/* TAB 2: SMART BUDGET */}
         {activeTab === "budget" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-bold text-navy-900">Budget Ledger & Line Items</h2>
-                <p className="text-xs text-slate-500">Deterministic exact allocation based on total approved cap.</p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-slate-500">Total Cap:</span>
-                <p className="text-lg font-extrabold text-navy-900 font-mono">
-                  {event.currency} {Number(event.total_budget).toLocaleString()}
-                </p>
-              </div>
-            </div>
-
-            {budgetItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {budgetItems.map((item) => (
-                  <Card key={item.id} className="p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-navy-900">{item.category}</span>
-                      <Badge variant="indigo" size="sm">Estimate</Badge>
-                    </div>
-                    <p className="text-lg font-extrabold text-navy-900 font-mono">
-                      {event.currency} {Number(item.estimated_cost).toLocaleString()}
-                    </p>
-                    <p className="text-xs text-slate-500 line-clamp-2">{item.description}</p>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
-                  <PieChart className="w-6 h-6" />
-                </div>
-                <h3 className="text-sm font-bold text-navy-900">No Budget Splits Yet</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Open the <strong>AI Blueprint Generator</strong> tab and click generate to automatically split your {event.currency} {Number(event.total_budget).toLocaleString()} budget across categories.
-                </p>
-                <Button size="sm" onClick={() => setActiveTab("ai_planner")}>
-                  Go to AI Planner
-                </Button>
-              </Card>
-            )}
-          </div>
+          <SmartBudgetWorkspace
+            eventId={event.id}
+            totalBudget={Number(event.total_budget)}
+            currency={event.currency}
+            items={budgetItems}
+            onItemsChange={fetchEvent}
+          />
         )}
 
-        {/* TAB 3: TIMELINE (Run-of-show from AI plan) */}
+        {/* TAB 3: TIMELINE (Run-of-show & Deadlines) */}
         {activeTab === "timeline" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-base font-bold text-navy-900">Run-of-Show Celebration Itinerary</h2>
-              <p className="text-xs text-slate-500">Minute-by-minute schedule and milestone coordination.</p>
-            </div>
-
-            {aiPlan && aiPlan.suggested_activities && aiPlan.suggested_activities.length > 0 ? (
-              <div className="space-y-3">
-                {aiPlan.suggested_activities.map((act, idx) => (
-                  <Card key={idx} className="p-4 flex items-start gap-4">
-                    <div className="p-2.5 rounded-xl bg-brand-50 text-brand-700 font-mono text-xs font-bold whitespace-nowrap">
-                      {act.time_or_milestone}
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-bold text-navy-900">{act.activity_name}</h4>
-                        <span className="text-[10px] text-slate-400">({act.duration_minutes} mins)</span>
-                      </div>
-                      <p className="text-xs text-slate-600">{act.description}</p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
-                  <Clock className="w-6 h-6" />
-                </div>
-                <h3 className="text-sm font-bold text-navy-900">No Timeline Generated Yet</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Generate an AI plan to assemble an itinerary for your {event.event_type} event.
-                </p>
-                <Button size="sm" onClick={() => setActiveTab("ai_planner")}>
-                  Open AI Planner
-                </Button>
-              </Card>
-            )}
-          </div>
+          <InteractiveTimelineWorkspace
+            eventDate={event.event_date}
+            timezone={event.timezone || "UTC"}
+            tasks={tasks}
+            itinerary={aiPlan?.suggested_activities || []}
+            onNavigateToTasks={() => setActiveTab("tasks")}
+          />
         )}
 
         {/* TAB 4: TASKS */}
         {activeTab === "tasks" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-base font-bold text-navy-900">Event Action Items</h2>
-                <p className="text-xs text-slate-500">
-                  {completedTasksCount} of {tasks.length} tasks completed ({progressPercent}%)
-                </p>
-              </div>
-
-              {/* Add Task Form */}
-              <form onSubmit={handleAddTask} className="flex gap-2 w-full sm:w-auto">
-                <Input
-                  placeholder="New task title..."
-                  value={newTaskTitle}
-                  onChange={(e) => setNewTaskTitle(e.target.value)}
-                  className="w-full sm:w-64"
-                />
-                <select
-                  value={newTaskPriority}
-                  onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}
-                  className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-navy-900"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-                <Button type="submit" size="sm" isLoading={isAddingTask} className="gap-1 flex-shrink-0">
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add</span>
-                </Button>
-              </form>
-            </div>
-
-            {/* Task List */}
-            <div className="space-y-2">
-              {tasks.map((task) => (
-                <Card
-                  key={task.id}
-                  onClick={() => handleToggleTask(task)}
-                  className="p-4 flex items-center justify-between gap-3 cursor-pointer hover:shadow-subtle transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    {task.status === "completed" ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                    ) : (
-                      <Circle className="w-5 h-5 text-slate-300 flex-shrink-0" />
-                    )}
-                    <div>
-                      <p className={`text-xs font-semibold ${task.status === "completed" ? "line-through text-slate-400" : "text-navy-900"}`}>
-                        {task.title}
-                      </p>
-                      {task.description && (
-                        <p className="text-[11px] text-slate-500 mt-0.5">{task.description}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
-                    task.priority === "high" || task.priority === "urgent" ? "bg-rose-50 text-rose-700" : task.priority === "medium" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600"
-                  }`}>
-                    {task.priority}
-                  </span>
-                </Card>
-              ))}
-
-              {tasks.length === 0 && (
-                <Card className="p-8 text-center text-slate-400 text-xs">
-                  No tasks added yet. Create your first task above.
-                </Card>
-              )}
-            </div>
-          </div>
+          <InteractiveTaskWorkspace
+            eventId={event.id}
+            tasks={tasks}
+            onTasksChange={fetchEvent}
+          />
         )}
 
         {/* TAB 5: VENDORS */}
