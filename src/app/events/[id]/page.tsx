@@ -37,6 +37,8 @@ import type { GeneratedEventPlan } from "@/lib/ai/schemas";
 import { SmartBudgetWorkspace } from "@/components/SmartBudgetWorkspace";
 import { InteractiveTaskWorkspace } from "@/components/InteractiveTaskWorkspace";
 import { InteractiveTimelineWorkspace } from "@/components/InteractiveTimelineWorkspace";
+import { AICopilotPanel } from "@/components/AICopilotPanel";
+import { VendorWorkspace } from "@/components/VendorWorkspace";
 
 interface WorkspaceProps {
   params: Promise<{ id: string }>;
@@ -588,9 +590,10 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
                 </div>
               </Card>
             </div>
+            {/* AI Copilot Panel */}
+            <AICopilotPanel event={event} onChangesApplied={fetchEvent} />
           </div>
         )}
-
         {/* TAB: AI PLANNER ENGINE */}
         {activeTab === "ai_planner" && (
           <div className="space-y-8">
@@ -825,53 +828,11 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
 
         {/* TAB 5: VENDORS */}
         {activeTab === "vendors" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-base font-bold text-navy-900">Vendors & Partners Needed</h2>
-              <p className="text-xs text-slate-500">Service categories required for {event.title} in {event.location}.</p>
-            </div>
-
-            {aiPlan && aiPlan.vendor_categories_needed && aiPlan.vendor_categories_needed.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {aiPlan.vendor_categories_needed.map((v, idx) => (
-                  <Card key={idx} className="p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-navy-900">{v.category}</h4>
-                      <Badge variant={v.necessity === "essential" ? "indigo" : "outline"} size="sm" className="capitalize">
-                        {v.necessity}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      <strong>Budget Range:</strong> {v.estimated_cost_range}
-                    </p>
-                    {v.suggested_questions.length > 0 && (
-                      <div className="pt-1">
-                        <span className="text-[11px] font-bold text-navy-900 block mb-1">Key Questions to Ask:</span>
-                        <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
-                          {v.suggested_questions.map((q, qIdx) => (
-                            <li key={qIdx}>{q}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
-                  <ShoppingBag className="w-6 h-6" />
-                </div>
-                <h3 className="text-sm font-bold text-navy-900">No Vendor Requirements Formulated</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Generate an AI blueprint to automatically identify essential vendor categories, price ranges, and interview questions.
-                </p>
-                <Button size="sm" onClick={() => setActiveTab("ai_planner")}>
-                  Open AI Planner
-                </Button>
-              </Card>
-            )}
-          </div>
+          <VendorWorkspace
+            event={event}
+            eventVendors={eventVendors}
+            onVendorsChange={fetchEvent}
+          />
         )}
       </main>
 
