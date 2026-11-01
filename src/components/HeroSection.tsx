@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2, ChevronRight } from "lucide-react";
+import { ArrowRight, ShieldCheck, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
@@ -11,14 +11,6 @@ export function HeroSection() {
       </div>
 
       <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
-        {/* Challenge Category Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brand-200/90 bg-white/80 shadow-subtle text-slate-700 text-xs font-medium mb-8 backdrop-blur-sm">
-          <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-          <span>Prompt Wars Challenge 5 — Celebration &amp; Event Planner</span>
-          <span className="w-1 h-1 rounded-full bg-slate-300" />
-          <span className="text-brand-700 font-semibold">GenAI + PostgreSQL</span>
-        </div>
-
         {/* Main Title & Tagline */}
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-navy-900 tracking-tight leading-[1.08]">
           Plan smarter. <br />
