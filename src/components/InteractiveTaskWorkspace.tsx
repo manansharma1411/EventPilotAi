@@ -416,8 +416,10 @@ export function InteractiveTaskWorkspace({
               >
                 <div className="flex items-start gap-3 flex-1">
                   <button
+                    type="button"
+                    aria-label={isDone ? "Mark task as todo" : "Mark task as completed"}
                     onClick={() => handleToggleTask(task)}
-                    className="mt-0.5 text-slate-400 hover:text-brand-600 transition-colors"
+                    className="mt-0.5 text-slate-400 hover:text-brand-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 rounded p-0.5"
                   >
                     {isDone ? (
                       <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -476,6 +478,7 @@ export function InteractiveTaskWorkspace({
                       className="h-8 w-8 p-0"
                       onClick={() => startEditing(task)}
                       title="Edit Task"
+                      aria-label="Edit task"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-slate-600" />
                     </Button>
@@ -485,6 +488,7 @@ export function InteractiveTaskWorkspace({
                       className="h-8 w-8 p-0 text-rose-600 hover:bg-rose-50"
                       onClick={() => handleDeleteTask(task.id)}
                       title="Delete Task"
+                      aria-label="Delete task"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

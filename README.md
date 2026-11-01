@@ -132,11 +132,12 @@ npm run test
 npm run build
 ```
 
-### Test Coverage Highlights:
+### Test Coverage Highlights (31 Automated Tests):
 - **Event Validation Suite**: Valid payloads, empty titles, unauthorized types, malformed dates, zero guest counts.
 - **AI Planning Engine Suite**: Valid plan schema parsing, corrupt JSON handling, missing field rejection, timeout error masking, HTTP 429 rate limit backoff.
 - **Financial & Timeline Suite**: Exact cent arithmetic, zero budget edge cases, full allocation math, overspending detection, contingency separation, negative number clamping, deadline urgency analysis, event date shifting offsets, timezone boundaries, currency formatting.
 - **Copilot & Vendor Suite**: Change proposal schema validation, privileged field stripping, infeasible request handling, quotation extraction confidence checks.
+- **Database RLS & Security Suite**: Cross-user data isolation, state machine constraint enforcement, XSS input sanitization, vendor selection lifecycle, bounded quotation buffer safety.
 
 ---
 

@@ -282,7 +282,7 @@ export function VendorWorkspace({
                 Paste raw vendor quotation emails or text proposals. Gemini will extract itemized costs and terms.
               </p>
             </div>
-            <button onClick={() => setIsUploadingQuote(false)} className="text-slate-400 hover:text-navy-900">
+            <button type="button" aria-label="Close quotation extractor" onClick={() => setIsUploadingQuote(false)} className="text-slate-400 hover:text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded p-1">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -377,7 +377,7 @@ export function VendorWorkspace({
           <form onSubmit={handleAddCustomVendor} className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-navy-900">Add Service Provider</h3>
-              <button onClick={() => setIsAddingCustom(false)} className="text-slate-400 hover:text-navy-900">
+              <button type="button" aria-label="Close provider modal" onClick={() => setIsAddingCustom(false)} className="text-slate-400 hover:text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded p-1">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -603,6 +603,7 @@ export function VendorWorkspace({
                       className="h-8 w-8 p-0"
                       onClick={() => startEditing(ev)}
                       title="Edit Vendor"
+                      aria-label="Edit vendor quote"
                     >
                       <Edit2 className="w-3.5 h-3.5 text-slate-600" />
                     </Button>
@@ -612,6 +613,7 @@ export function VendorWorkspace({
                       className="h-8 w-8 p-0 text-rose-600 hover:bg-rose-50"
                       onClick={() => handleDelete(ev.id)}
                       title="Remove Vendor"
+                      aria-label="Remove vendor"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

@@ -808,7 +808,7 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
           <Card className="max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="text-sm font-bold text-navy-900">Edit Event Parameters</h3>
-              <button onClick={() => setIsEditing(false)} className="text-slate-400 hover:text-navy-900">
+              <button type="button" aria-label="Close edit modal" onClick={() => setIsEditing(false)} className="text-slate-400 hover:text-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-500 rounded p-1">
                 <X className="w-4 h-4" />
               </button>
             </div>

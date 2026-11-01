@@ -49,6 +49,10 @@ try {
   const { runPhase7Tests } = jiti("./src/lib/copilot/copilot.test.ts");
   reportSuite("AI Copilot Revision Engine & Vendor Logic", runPhase7Tests());
 
+  // 5. Security & RLS Policy Isolation Tests
+  const { runSecurityTests } = jiti("./src/lib/security/security.test.ts");
+  reportSuite("Database RLS & Security Policy Isolation", runSecurityTests());
+
   console.log("=================================================");
   console.log(`TOTAL AUDIT TESTS: ${totalTests}`);
   console.log(`PASSED: ${passedTests}`);

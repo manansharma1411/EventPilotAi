@@ -472,6 +472,7 @@ export function SmartBudgetWorkspace({
                         className="h-8 w-8 p-0"
                         onClick={() => startEditing(item)}
                         title="Edit Item"
+                        aria-label="Edit budget item"
                       >
                         <Edit2 className="w-3.5 h-3.5 text-slate-600" />
                       </Button>
@@ -481,6 +482,7 @@ export function SmartBudgetWorkspace({
                         className="h-8 w-8 p-0 text-rose-600 hover:bg-rose-50"
                         onClick={() => handleDeleteItem(item.id)}
                         title="Delete Item"
+                        aria-label="Delete budget item"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>

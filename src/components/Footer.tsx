@@ -18,7 +18,7 @@ export function Footer() {
 
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-medium">
             <Link
-              href="/plan"
+              href="/events/new"
               className="text-brand-600 hover:text-brand-700 transition-colors font-semibold"
             >
               Plan My Event
