@@ -156,7 +156,7 @@ export function validateEventInput(raw: unknown): ValidationResult<EventInputDat
       currency,
       theme,
       preferences,
-      status: "draft",
+      status: "planning",
     },
   };
 }

@@ -15,7 +15,7 @@ export type EventCategory =
 
 export type EventType = EventCategory;
 
-export type EventStatus = "planning" | "confirmed" | "in_progress" | "completed" | "archived" | "draft";
+export type EventStatus = "planning" | "confirmed" | "in_progress" | "completed" | "archived";
 
 // 1. Profile Entity (1-to-1 with auth.users)
 export interface ProfileRecord {

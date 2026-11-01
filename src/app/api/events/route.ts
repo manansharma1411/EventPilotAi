@@ -103,7 +103,7 @@ export async function POST(req: Request) {
         currency: payload.currency,
         theme: payload.theme || null,
         preferences: payload.preferences || {},
-        status: payload.status || "draft",
+        status: payload.status || "planning",
       })
       .select()
       .single();
