@@ -3,8 +3,6 @@
 // Fixed set of permitted application operations & strict validation
 // ==============================================================================
 
-import type { EventType } from "@/types";
-
 export interface EventFieldChange {
   field: "title" | "event_date" | "guest_count" | "total_budget" | "theme" | "location";
   old_value: string | number | null;

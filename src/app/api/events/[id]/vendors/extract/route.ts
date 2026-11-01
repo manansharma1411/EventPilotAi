@@ -29,6 +29,18 @@ export async function POST(req: Request, { params }: RouteParams) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    // Verify event ownership
+    const { data: event, error: eventError } = await supabase
+      .from("events")
+      .select("id")
+      .eq("id", eventId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (eventError || !event) {
+      return NextResponse.json({ error: "Event not found or unauthorized access" }, { status: 404 });
+    }
+
     const body = await req.json().catch(() => null);
     if (!body || !body.rawText || typeof body.rawText !== "string" || !body.rawText.trim()) {
       return NextResponse.json({ error: "rawText quotation content is required" }, { status: 400 });

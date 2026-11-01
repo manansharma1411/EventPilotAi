@@ -3,7 +3,7 @@
 // Generates structured change proposals with trade-off analysis
 // ==============================================================================
 
-import { callGemini, GeminiServiceError } from "@/lib/ai/client";
+import { callGemini } from "@/lib/ai/client";
 import { validateChangeProposal, type StructuredChangeProposal } from "./schemas";
 import type { EventRecord, BudgetItemRecord, TaskRecord } from "@/types";
 

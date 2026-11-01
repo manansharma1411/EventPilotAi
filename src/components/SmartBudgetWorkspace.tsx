@@ -1,24 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
 import {
   DollarSign,
   Plus,
   Trash2,
   Edit2,
   AlertTriangle,
-  CheckCircle2,
-  ShieldCheck,
-  TrendingDown,
   TrendingUp,
   Save,
-  X,
   PieChart as PieChartIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { calculateBudgetMetrics, formatCurrency } from "@/lib/budget/calculations";
 import type { BudgetItemRecord } from "@/types";
 
@@ -55,6 +51,7 @@ export function SmartBudgetWorkspace({
 
   // Filter/Sort state
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
+  const toast = useToast();
 
   const metrics = calculateBudgetMetrics(totalBudget, items);
 
@@ -86,9 +83,10 @@ export function SmartBudgetWorkspace({
       setNewEstimated(0);
       setNewActual(0);
       setIsAddingItem(false);
+      toast.success("Budget Item Added", `${newCategory} added to financial ledger.`);
       onItemsChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error creating budget item");
+      toast.error("Error creating budget item", err instanceof Error ? err.message : "Request failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -125,9 +123,10 @@ export function SmartBudgetWorkspace({
       }
 
       setEditingItemId(null);
+      toast.success("Budget Item Updated", "Changes saved to cloud ledger.");
       onItemsChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error saving edit");
+      toast.error("Error saving edit", err instanceof Error ? err.message : "Request failed");
     } finally {
       setIsSavingEdit(false);
     }
@@ -147,9 +146,10 @@ export function SmartBudgetWorkspace({
         throw new Error(data.error || "Failed to delete item");
       }
 
+      toast.success("Budget Item Deleted", "Line item removed from budget.");
       onItemsChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error deleting budget item");
+      toast.error("Error deleting item", err instanceof Error ? err.message : "Request failed");
     }
   };
 

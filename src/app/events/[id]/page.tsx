@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,14 +10,12 @@ import {
   Clock,
   CheckCircle2,
   Circle,
-  Plus,
   Trash2,
   Edit3,
   Bot,
   Layers,
   ShoppingBag,
   ListTodo,
-  PieChart,
   ShieldAlert,
   Save,
   X,
@@ -78,17 +76,12 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
   const [editBudget, setEditBudget] = useState<number>(0);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
-  // New Task State
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium");
-  const [isAddingTask, setIsAddingTask] = useState(false);
-
   // Delete Dialog State
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch event data and latest plan
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
     try {
       setIsLoading(true);
       setErrorMessage(null);
@@ -126,11 +119,11 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [eventId]);
 
   useEffect(() => {
     fetchEvent();
-  }, [eventId]);
+  }, [fetchEvent]);
 
   // Handle AI Plan Generation
   const handleGeneratePlan = async () => {
@@ -251,34 +244,7 @@ export default function EventWorkspacePage({ params }: WorkspaceProps) {
     }
   };
 
-  // Handle Add Task
-  const handleAddTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTaskTitle.trim()) return;
 
-    try {
-      setIsAddingTask(true);
-      const res = await fetch(`/api/events/${eventId}/tasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newTaskTitle.trim(),
-          priority: newTaskPriority,
-          status: "todo",
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to add task");
-
-      setTasks([...tasks, data.task]);
-      setNewTaskTitle("");
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Failed to create task");
-    } finally {
-      setIsAddingTask(false);
-    }
-  };
 
   // Handle Toggle Task Status
   const handleToggleTask = async (task: TaskRecord) => {

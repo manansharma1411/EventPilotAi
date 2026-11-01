@@ -1,15 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import {
   Calendar,
   Clock,
   AlertTriangle,
-  CheckCircle2,
   AlertCircle,
-  Flag,
-  ArrowRight,
-  Sparkles
+  Flag
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

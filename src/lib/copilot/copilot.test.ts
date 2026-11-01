@@ -8,7 +8,7 @@
 // 5. Vendor input sanitization
 // ==============================================================================
 
-import { validateChangeProposal, type StructuredChangeProposal } from "./schemas";
+import { validateChangeProposal } from "./schemas";
 import { buildCopilotPrompt } from "./service";
 import type { EventRecord, BudgetItemRecord, TaskRecord } from "@/types";
 

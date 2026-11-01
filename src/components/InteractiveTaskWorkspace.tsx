@@ -1,24 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
 import {
   ListTodo,
   Plus,
   Trash2,
   Edit2,
-  AlertCircle,
   CheckCircle2,
   Circle,
   Calendar,
-  Save,
-  Clock,
-  Filter,
-  ArrowUpDown
+  Save
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { analyzeTaskDeadline } from "@/lib/timeline/calculations";
 import type { TaskRecord, TaskPriority, TaskStatus } from "@/types";
 
@@ -53,6 +49,7 @@ export function InteractiveTaskWorkspace({
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "completed">("all");
   const [priorityFilter, setPriorityFilter] = useState<"all" | TaskPriority>("all");
   const [sortBy, setSortBy] = useState<"deadline" | "priority" | "newest">("deadline");
+  const toast = useToast();
 
   // Progress metrics
   const completedCount = tasks.filter((t) => t.status === "completed").length;
@@ -88,9 +85,10 @@ export function InteractiveTaskWorkspace({
       setNewPriority("medium");
       setNewDueAt("");
       setIsAddingTask(false);
+      toast.success("Task Created", "New milestone saved to Supabase.");
       onTasksChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error creating task");
+      toast.error("Error creating task", err instanceof Error ? err.message : "Request failed");
     } finally {
       setIsSubmitting(false);
     }
@@ -111,9 +109,13 @@ export function InteractiveTaskWorkspace({
       });
 
       if (!res.ok) throw new Error("Failed to update status");
+      toast.success(
+        nextStatus === "completed" ? "Task Completed! 🎉" : "Task Reopened",
+        task.title
+      );
       onTasksChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error updating task status");
+      toast.error("Error updating task status", err instanceof Error ? err.message : "Request failed");
     }
   };
 
@@ -144,9 +146,10 @@ export function InteractiveTaskWorkspace({
 
       if (!res.ok) throw new Error("Failed to save task update");
       setEditingTaskId(null);
+      toast.success("Task Updated", "Milestone parameters updated.");
       onTasksChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error updating task");
+      toast.error("Error updating task", err instanceof Error ? err.message : "Request failed");
     } finally {
       setIsSavingEdit(false);
     }
@@ -162,9 +165,10 @@ export function InteractiveTaskWorkspace({
       });
 
       if (!res.ok) throw new Error("Failed to delete task");
+      toast.success("Task Removed", "Milestone deleted from checklist.");
       onTasksChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error removing task");
+      toast.error("Error removing task", err instanceof Error ? err.message : "Request failed");
     }
   };
 

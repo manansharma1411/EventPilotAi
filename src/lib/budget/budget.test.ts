@@ -210,5 +210,21 @@ export function runPhase6Tests() {
     results.push({ testName: "9. Timezone edge cases", passed: false, message: String(err) });
   }
 
+  // 10. CURRENCY FORMATTING
+  try {
+    const formattedUSD = formatCurrency(1250.5, "USD");
+    const formattedINR = formatCurrency(50000, "INR");
+    const passed =
+      formattedUSD.includes("1,250.50") &&
+      (formattedINR.includes("50,000") || formattedINR.includes("₹"));
+
+    results.push({
+      testName: "10. Currency formatting produces locale-compliant representations",
+      passed,
+    });
+  } catch (err: unknown) {
+    results.push({ testName: "10. Currency formatting", passed: false, message: String(err) });
+  }
+
   return results;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
 import {
   Bot,
   Send,
@@ -8,12 +9,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
-  TrendingDown,
-  TrendingUp,
-  RefreshCw,
   X,
-  ShieldCheck,
-  HelpCircle
+  ShieldCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +34,7 @@ export function AICopilotPanel({ event, onChangesApplied }: AICopilotPanelProps)
   const [proposal, setProposal] = useState<StructuredChangeProposal | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [appliedSuccessMsg, setAppliedSuccessMsg] = useState<string | null>(null);
+  const toast = useToast();
 
   const examplePrompts = [
     `Reduce the budget by ${event.currency} 5,000 without sacrificing food quality`,
@@ -92,11 +90,15 @@ export function AICopilotPanel({ event, onChangesApplied }: AICopilotPanelProps)
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed applying changes");
 
-      setAppliedSuccessMsg(`Success! Version ${data.version} snapshot saved.`);
+      const successText = `Success! Plan revision snapshot (v${data.version}) applied.`;
+      setAppliedSuccessMsg(successText);
+      toast.success("AI Proposal Applied", successText);
       setProposal(null);
       onChangesApplied();
     } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : "Error applying approved changes");
+      const msg = err instanceof Error ? err.message : "Error applying approved changes";
+      setErrorMsg(msg);
+      toast.error("Error applying changes", msg);
     } finally {
       setIsApplying(false);
     }

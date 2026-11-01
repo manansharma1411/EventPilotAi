@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
 import {
   ShoppingBag,
   Plus,
@@ -9,12 +10,7 @@ import {
   FileText,
   Upload,
   CheckCircle2,
-  AlertCircle,
-  ExternalLink,
-  ShieldCheck,
   Building,
-  DollarSign,
-  Filter,
   Save,
   X
 } from "lucide-react";
@@ -23,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/budget/calculations";
-import type { EventRecord, EventVendorRecord, VendorRecord, EventVendorSelectionStatus } from "@/types";
+import type { EventRecord, EventVendorRecord, EventVendorSelectionStatus } from "@/types";
 import type { ExtractedQuotation } from "@/app/api/events/[id]/vendors/extract/route";
 
 interface VendorWorkspaceProps {
@@ -69,6 +65,7 @@ export function VendorWorkspace({
   // Filter & sorting
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const toast = useToast();
 
   // Handle Add Custom Vendor
   const handleAddCustomVendor = async (e: React.FormEvent) => {
@@ -108,9 +105,10 @@ export function VendorWorkspace({
       setVQuotedPrice(0);
       setVNotes("");
       setIsAddingCustom(false);
+      toast.success("Vendor Added", `${vName} logged to event directory.`);
       onVendorsChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error saving vendor");
+      toast.error("Error saving vendor", err instanceof Error ? err.message : "Request failed");
     } finally {
       setIsSubmittingVendor(false);
     }
@@ -167,9 +165,10 @@ export function VendorWorkspace({
       setExtractedQuote(null);
       setRawQuoteText("");
       setIsUploadingQuote(false);
+      toast.success("Quotation Saved", `${extractedQuote.vendor_name} quotation added.`);
       onVendorsChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error saving vendor");
+      toast.error("Error saving vendor", err instanceof Error ? err.message : "Request failed");
     }
   };
 
@@ -199,9 +198,10 @@ export function VendorWorkspace({
       if (!res.ok) throw new Error("Failed updating vendor");
 
       setEditingEvId(null);
+      toast.success("Vendor Updated", "Terms and selection status saved.");
       onVendorsChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error saving edit");
+      toast.error("Error saving edit", err instanceof Error ? err.message : "Request failed");
     } finally {
       setIsSavingEdit(false);
     }
@@ -217,9 +217,10 @@ export function VendorWorkspace({
       });
 
       if (!res.ok) throw new Error("Failed deleting vendor");
+      toast.success("Vendor Removed", "Vendor unlinked from event.");
       onVendorsChange();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "Error deleting vendor");
+      toast.error("Error deleting vendor", err instanceof Error ? err.message : "Request failed");
     }
   };
 
