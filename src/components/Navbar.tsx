@@ -78,7 +78,7 @@ export function Navbar() {
           >
             Sign In
           </Link>
-          <Link href="/events/new">
+          <Link href="/plan">
             <Button size="md" className="gap-2">
               <span>Plan My Event</span>
               <ArrowRight className="w-4 h-4" />
@@ -142,7 +142,7 @@ export function Navbar() {
             >
               Sign In / Account
             </Link>
-            <Link href="/events/new" onClick={() => setIsOpen(false)}>
+            <Link href="/plan" onClick={() => setIsOpen(false)}>
               <Button className="w-full">Plan My Event</Button>
             </Link>
             <Link

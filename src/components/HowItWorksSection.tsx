@@ -78,7 +78,7 @@ export function HowItWorksSection() {
         </div>
 
         <div className="mt-12 text-center">
-          <Link href="/events/new">
+          <Link href="/plan">
             <Button size="lg" className="px-8 shadow-sm">
               <span>Start Planning Your Event</span>
               <ArrowRight className="w-4 h-4 ml-1.5" />

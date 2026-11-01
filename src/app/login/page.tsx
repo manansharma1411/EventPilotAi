@@ -209,8 +209,8 @@ export default function LoginPage() {
               <ShieldCheck className="w-4 h-4 text-brand-600" />
               <span>Row Level Security (RLS)</span>
             </span>
-            <Link href="/events/new" className="text-brand-600 hover:underline font-semibold">
-              Event Wizard &rarr;
+            <Link href="/plan" className="text-brand-600 hover:underline font-semibold">
+              Guest Sandbox Mode &rarr;
             </Link>
           </div>
         </Card>

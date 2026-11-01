@@ -112,7 +112,7 @@ export function FeaturesSection() {
 
                 <div className="mt-8 pt-4">
                   <Link
-                    href="/events/new"
+                    href="/plan"
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 group-hover:translate-x-0.5 transition-transform"
                   >
                     <span>Launch in Planner</span>

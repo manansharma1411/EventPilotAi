@@ -28,7 +28,7 @@ export function HeroSection() {
 
         {/* CTAs */}
         <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5">
-          <Link href="/events/new" className="w-full sm:w-auto">
+          <Link href="/plan" className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto px-7 py-3 text-base shadow-sm">
               <span>Plan My Event</span>
               <ArrowRight className="w-4 h-4 ml-1.5" />
