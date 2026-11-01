@@ -6,7 +6,7 @@ export function FeaturesSection() {
   const features = [
     {
       title: "Gemini AI Event Architect",
-      badge: "Prompt Wars Challenge 5",
+      badge: "AI Celebration Architect",
       description:
         "Synthesizes cohesive celebration themes, multi-phase itineraries, and tailored vendor briefs. Every AI output is strictly validated against TypeScript Zod schemas.",
       icon: Sparkles,

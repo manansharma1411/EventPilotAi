@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Sparkles, Menu, X, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,9 +23,6 @@ export function Navbar() {
               <span className="font-bold text-base sm:text-lg text-navy-900 tracking-tight">
                 EventPilot AI
               </span>
-              <Badge variant="indigo" size="sm" className="hidden sm:inline-flex">
-                Challenge 5
-              </Badge>
             </div>
             <p className="text-xs text-slate-500 hidden sm:block">Plan smarter. Celebrate better.</p>
           </div>
