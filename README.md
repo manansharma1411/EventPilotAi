@@ -2,141 +2,170 @@
 
 > **Plan smarter. Celebrate better.**
 
-EventPilot AI is a production-minded GenAI event planning application engineered for **Prompt Wars Challenge 5 — Celebration & Event Planner**. It guides users through crafting unforgettable celebrations with structured Gemini AI workflows, deterministic financial calculations, and persistent Supabase PostgreSQL storage.
+EventPilot AI is a production-grade, full-stack GenAI celebration and event planning application developed for **Prompt Wars Challenge 5 — Celebration & Event Planner**. It pairs Google Gemini 2.5 generative intelligence with deterministic financial arithmetic, real-time interactive workspaces, and persistent Supabase PostgreSQL cloud storage with strict Row Level Security (RLS).
 
 ---
 
-## Architecture & Technology Stack
+## 🌟 Key Features
+
+### 1. 🤖 Gemini AI Planning Engine
+- **Bespoke Blueprint Synthesis**: Formulates tailored celebration packages based on event type, guest count, budget, currency, aesthetic theme, dietary restrictions, and accessibility constraints.
+- **Run-of-Show Itinerary**: Structured hourly milestones from vendor arrival to post-event teardown.
+- **Risk Register & Assumptions**: Identifies potential logistical pitfalls and formulates concrete contingency recommendations.
+- **Deterministic Math Guardrails**: AI never performs exact financial calculations; all allocations are normalized and validated server-side.
+
+### 2. 💰 Smart Budget Workspace
+- **Cent-Precision Accounting**: Full prevention of floating-point drift using safe integer-cents arithmetic.
+- **Contingency Reserve Isolation**: Clearly distinguishes allocated contingency reserves from unallocated capital.
+- **Real-Time Visual Breakdown**: Interactive category charts with automatic overspending warnings.
+- **Inline Editing & Currency Formatting**: Instant inline price adjustments with locale-compliant formatting (USD `$`, INR `₹`, EUR `€`, GBP `£`, etc.).
+
+### 3. ✅ Interactive Task Checklist
+- **Deadline Urgency Engine**: Categorizes tasks into `overdue`, `urgent` (within 7 days), and `upcoming`.
+- **Dynamic Event Date Shifts**: Recalculates all date-relative task deadlines deterministically whenever the event date moves.
+- **Priority & Status Filters**: Instant filtering across priorities (`high`, `medium`, `low`) and statuses (`todo`, `in_progress`, `completed`).
+
+### 4. 📅 Dynamic Timeline Workspace
+- **Live Day Countdown**: Timezone-aware event-day countdown timer.
+- **Synchronized Milestones**: Visual representation of deadlines mapped against the hourly run-of-show schedule.
+
+### 5. 💬 AI Copilot Workspace Assistant
+- **Conversational Iterations**: Natural language modifications such as *"Reduce budget by ₹5,000 without sacrificing food quality"* or *"Make this celebration child-friendly"*.
+- **Structured Change Proposals**: Formulates transparent before-and-after comparisons with explicit trade-off explanations.
+- **Human-in-the-Loop Approval**: User reviews and approves material changes before anything is written to the database.
+- **Security Sandboxing**: AI output cannot execute arbitrary code, modify system columns, or alter unpermitted fields.
+
+### 6. 🤝 Vendor Management & Quote Extraction
+- **Quotation Extraction**: Paste or input vendor quotation sheets; Gemini extracts itemized inclusions, exclusions, quoted totals, and validity dates with confidence warnings.
+- **Side-by-Side Comparison**: Compare shortlisted vendors per category to make informed hiring decisions.
+
+---
+
+## 🏗️ Architecture & Technology Stack
+
+```mermaid
+flowchart TD
+    Client["Client Browser (Next.js 15 / React 19)"]
+    API["API Layer (Next.js App Router / Edge-Ready)"]
+    DB[("Supabase PostgreSQL (Strict RLS Policies)")]
+    Gemini["Google Gemini API (Gemini 2.5 Flash)"]
+
+    Client -->|Authenticated Cookies| API
+    API -->|SSR Session Validation| DB
+    API -->|Structured Zod Prompts| Gemini
+    Gemini -->|JSON Event Blueprint| API
+    API -->|Normalized Data| Client
+```
 
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Framework** | Next.js 15 (App Router) | High-performance React framework with server components and edge-ready API routes |
+| **Framework** | Next.js 15.5 (App Router) | High-performance React framework with React 19 server/client components |
 | **Language** | TypeScript (Strict Mode) | End-to-end type safety across domain models and API contracts |
-| **Styling** | Tailwind CSS | Modern, utility-first responsive interface |
-| **Icons** | Lucide React | Clean, consistent UI iconography |
-| **Persistence** | Supabase (PostgreSQL) | Production relational storage with Row Level Security |
-| **AI Engine** | Google Gemini API | Structured event architecture, run-of-show itineraries, and smart suggestions |
-| **Hosting & CI/CD** | Vercel & GitHub | Continuous deployment pipeline with automated previews |
+| **Styling** | Tailwind CSS | Modern, accessible, responsive design system |
+| **Icons** | Lucide React | Consistent iconography across workspaces |
+| **Persistence** | Supabase (PostgreSQL 15) | Relational cloud database with Row Level Security (RLS) |
+| **Auth** | Supabase Auth (@supabase/ssr) | Secure cookie-based authentication with automatic session refresh |
+| **AI Engine** | Google Gemini API (gemini-2.5-flash)| Bespoke celebration blueprints, copilot revisions, and quote extraction |
+| **Hosting & CI/CD** | Vercel & GitHub | Continuous deployment pipeline with production previews |
 
 ---
 
-## Phased Build Roadmap
-
-- **Phase 1: Deploy Before Building (Current)**:
-  - Base project scaffolding with Next.js App Router, Tailwind CSS, TypeScript strict mode.
-  - Responsive landing page with tagline and branding.
-  - Production-ready `GET /api/health` endpoint.
-  - GitHub repository setup & Vercel deployment pipeline.
-- **Phase 2: Database Architecture & Auth**:
-  - Supabase PostgreSQL schema (events, budgets, guest lists, timeline items).
-  - Row Level Security (RLS) policies and database migrations.
-  - Safe client wrappers with type generation.
-- **Phase 3: Gemini AI Event Architect**:
-  - Structured prompt engineering with Zod validation.
-  - Deterministic calculations for budgets and timelines.
-  - Real-time generation of custom celebration itineraries.
-- **Phase 4: Dashboard, Analytics & Polish**:
-  - Recharts budget allocation breakdown and spend tracking.
-  - Interactive RSVP manager and run-of-show editor.
-  - End-to-end user workflows and full mobile optimization.
-
----
-
-## Getting Started Locally
+## 🚀 Getting Started Locally
 
 ### Prerequisites
-- Node.js `v18.18+` or `v20+` (verified on `v24.14.1`)
-- npm `v10+` (verified on `v11.11.0`)
+- Node.js `v20+` or `v24+` (verified on `v24.14.1`)
+- npm `v10+`
 - Git
 
-### Installation
+### 1. Clone the repository
+```bash
+git clone https://github.com/manansharma1411/EventPilotAi.git
+cd EventPilotAi
+```
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/<your-username>/EventPilotAI.git
-   cd EventPilotAI
-   ```
+### 2. Install dependencies
+```bash
+npm install
+```
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+### 3. Configure environment variables
+Create a `.env.local` file in the root directory:
+```bash
+cp .env.example .env.local
+```
 
-3. **Configure Environment Variables**:
-   Copy `.env.example` to `.env.local`:
-   ```bash
-   cp .env.example .env.local
-   ```
-   *(Values can remain blank for Phase 1 verification; they will be populated during Phases 2 & 3)*.
+Populate the following variables:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-id>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_<your-key>
+GEMINI_API_KEY=<your-google-gemini-api-key>
+```
+*(Note: Ensure `NEXT_PUBLIC_SUPABASE_URL` does NOT include `/rest/v1/` at the end).*
 
-4. **Run the local development server**:
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 4. Run database migrations
+Apply the schema in your Supabase SQL Editor:
+- Open `supabase/migrations/20261022000001_eventpilot_core_schema.sql` and run it in the Supabase Dashboard SQL Editor.
 
-5. **Verify System Health**:
-   Visit [http://localhost:3000/api/health](http://localhost:3000/api/health) to confirm the backend is responding with `status: "ok"`.
-
----
-
-## Health Check Endpoint
-
-EventPilot AI exposes a dedicated diagnostic endpoint at `/api/health`:
-
-- **Route**: `GET /api/health`
-- **Response Format**: `application/json`
-- **Sample Payload**:
-  ```json
-  {
-    "status": "ok",
-    "app": "EventPilot AI",
-    "tagline": "Plan smarter. Celebrate better.",
-    "version": "0.1.0",
-    "timestamp": "2026-10-22T00:45:00.000Z",
-    "uptimeSeconds": 42,
-    "environment": "production",
-    "services": {
-      "supabase": "pending_keys",
-      "gemini": "pending_keys"
-    }
-  }
-  ```
+### 5. Start development server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to start planning events.
 
 ---
 
-## Verification & Quality Assurance
+## 🧪 Testing & Quality Assurance
 
-Run the following checks before committing any changes:
+EventPilot AI includes a comprehensive automated test suite with 26 automated unit and integration tests across all core systems:
 
 ```bash
-# Type check TypeScript codebase
+# Run TypeScript strict type verification
 npx tsc --noEmit
 
-# Run ESLint
+# Run ESLint validation
 npm run lint
 
-# Create production build
+# Run the automated QA test suite
+npm run test
+
+# Run production Next.js build
 npm run build
 ```
 
----
-
-## Deployment to Vercel
-
-EventPilot AI is designed for seamless continuous deployment via Vercel:
-
-1. Push your repository to GitHub.
-2. In the [Vercel Dashboard](https://vercel.com/dashboard), click **Add New** &rarr; **Project**.
-3. Import your `EventPilotAI` GitHub repository.
-4. Keep the default Next.js build settings (`npm run build`, output `.next`).
-5. Click **Deploy**.
-6. Every push to `main` automatically triggers a production deployment, while pull requests generate isolated preview deployments.
+### Test Coverage Highlights:
+- **Event Validation Suite**: Valid payloads, empty titles, unauthorized types, malformed dates, zero guest counts.
+- **AI Planning Engine Suite**: Valid plan schema parsing, corrupt JSON handling, missing field rejection, timeout error masking, HTTP 429 rate limit backoff.
+- **Financial & Timeline Suite**: Exact cent arithmetic, zero budget edge cases, full allocation math, overspending detection, contingency separation, negative number clamping, deadline urgency analysis, event date shifting offsets, timezone boundaries, currency formatting.
+- **Copilot & Vendor Suite**: Change proposal schema validation, privileged field stripping, infeasible request handling, quotation extraction confidence checks.
 
 ---
 
-## Security Best Practices
-- Never commit `.env.local` or any private credentials to GitHub.
-- All database mutations enforce Row Level Security (RLS) in Supabase.
-- AI inputs and outputs are sanitized and validated against explicit Zod schemas.
-- Financial figures are computed deterministically using standard application arithmetic.
+## 🔒 Security & Data Protection
+
+1. **Zero Key Exposure**: `GEMINI_API_KEY` is restricted strictly to server-side routes and is never sent to the browser or client bundles.
+2. **Database Row Level Security (RLS)**: Every database table (`events`, `tasks`, `budget_items`, `event_vendors`, `plan_versions`) enforces ownership via `auth.uid() = user_id`.
+3. **Server-Side Authorization**: API routes authenticate requests via server-side session cookies and independently verify event ownership before executing any database mutation.
+4. **Input Sanitization**: Freeform user text and quotation inputs are bounded (max 20,000 characters) to prevent buffer overflows and excessive token consumption.
+5. **No Dangerous HTML**: All user and AI content is rendered safely via React JSX escaping without `dangerouslySetInnerHTML`.
+
+---
+
+## 🎬 Demo Video Storyboard (User Journey)
+
+| Time | Scene | Action & Narration |
+| :--- | :--- | :--- |
+| **0:00 - 0:15** | **Landing Page** | Introduce EventPilot AI: *"Plan smarter. Celebrate better."* Show responsive hero section, feature cards, and instant sign-in. |
+| **0:15 - 0:45** | **Event Creation Wizard** | Create an event (*e.g., Golden 50th Anniversary Gala, 120 guests, budget ₹75,000, theme "Mid-Century Elegance"*). |
+| **0:45 - 1:15** | **AI Event Architect** | Click *Generate AI Blueprint*. Gemini creates custom color palettes, run-of-show schedule, per-guest budget allocations, and contingency risks. |
+| **1:15 - 1:45** | **Smart Budget & Tasks** | Demonstrate inline budget editing. Show automatic warning when an item causes overspending. Complete a checklist task and show progress bar update. |
+| **1:45 - 2:15** | **AI Copilot Revision** | Ask Copilot: *"Adjust the catering budget down by ₹5,000 and reallocate to live acoustic music."* Review before-and-after proposal and click *Apply*. |
+| **2:15 - 2:45** | **Vendor Quotation Extraction**| Paste an unorganized vendor quote into the extractor. Watch it extract line items, quoted totals, and validity terms with confidence flags. |
+| **2:45 - 3:00** | **Persistence & Security** | Refresh browser (`F5`) to verify data persistence in Supabase PostgreSQL. Conclude demo. |
+
+---
+
+## ⚠️ Known External Limitations
+
+1. **Free Tier AI Quotas**: Free-tier Gemini API keys are subject to Google's rate limits (15 requests/minute). EventPilot AI incorporates exponential backoff and helpful UI alerts when limits are approached.
+2. **Third-Party Email Confirmation**: If Supabase project settings have *"Confirm email"* enabled in Auth, users must click the verification link sent to their email before signing in.
+3. **Live Vendor APIs**: Real-time live inventory queries require commercial vendor aggregator APIs; EventPilot AI provides manual entry, demo catalog templates, and AI-powered quotation extraction.
